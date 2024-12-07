@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            background-color: rgb(19, 65, 152);
+        }
+
+        #koisi_tatie {
+            position: absolute;
+            bottom: 0px;
+            right: 0px;
+            width: 80%;
+            height: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <input type="file" id="fileInput" accept=".json">
+    <img src="koisitatie_hutuu.png" id="koisi_tatie">
+    <script>
+        // クッキーに保存する関数
+        function setCookie(name, value, days) {
+            const date = new Date();
+            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000)); // 日数分だけ加算
+            const expires = "expires=" + date.toUTCString();
+            document.cookie = name + "=" + JSON.stringify(value) + ";" + expires + ";path=/";
+        }
+
+        // クッキーから値を取得する関数
+        function getCookie(name) {
+            const decodedCookies = decodeURIComponent(document.cookie);
+            const cookies = decodedCookies.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                let c = cookies[i].trim();
+                if (c.indexOf(name + "=") == 0) {
+                    return JSON.parse(c.substring(name.length + 1));
+                }
+            }
+            return null;
+        }
+
+        // ファイル選択時に実行される関数
+        document.addEventListener("DOMContentLoaded", function () {
+            // ファイル選択時に実行される関数
+            document.getElementById("fileInput").addEventListener("change", function (event) {
+                const file = event.target.files[0]; // ファイルを取得
+                if (file && file.type === "application/json") {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        try {
+                            const jsonData = JSON.parse(e.target.result); // JSONデータをパース
+                            setCookie('jsonData', jsonData, 7); // クッキーに保存（1週間）
+                            alert("JSONデータがクッキーに保存されました。");
+                        } catch (error) {
+                            alert("JSONファイルの読み込みに失敗しました。");
+                        }
+                    };
+                    reader.readAsText(file); // ファイルをテキストとして読み込む
+                } else {
+                    alert("JSONファイルを選択してください。");
+                }
+            });
+        });
+
+
+        // ページロード時にクッキーからデータを取得する例
+        window.onload = function () {
+            const jsonData = getCookie('jsonData');
+            if (jsonData) {
+                console.log('保存されたJSONデータ:', jsonData);
+            } else {
+                console.log('JSONデータは保存されていません。');
+            }
+        };
+    </script>
+</body>
+
+</html>
